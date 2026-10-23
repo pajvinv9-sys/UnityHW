@@ -4,7 +4,12 @@ public class HealthClass: MonoBehaviour, IDamagable
 {
     [field: SerializeField, Min(0)] public float Health { get; private set; }
 
-    [field: SerializeField, Min(0)] public float MaxHealth { get; private set; }
+    [field: SerializeField]
+    public MaxHealth MaxHealthConfig { get; private set; }
+
+    public float MaxHealth => MaxHealthConfig != null
+        ? MaxHealthConfig.Value
+        : 0f;
 
 
     [field: SerializeField] TakeDamageLogicBase TakeDamageLogic { get; set; }
@@ -19,9 +24,17 @@ public class HealthClass: MonoBehaviour, IDamagable
         DeathLogic ??= GetComponent<DeathLogicBase>();
         HealLogic ??= GetComponent<HealLogicBase>();
 
-        Health = MaxHealth;
+        if (MaxHealthConfig == null || MaxHealth <= 0)
+        {
+            Debug.LogError(
+                $"MaxHealth не назначен для {gameObject.name}",
+                this
+            );
+            enabled = false;
+            return;
+        }
 
-        if (MaxHealth <= 0) Debug.Log("Максимальное здоровье не назначено или отрицательное");
+        Health = MaxHealth;
     }
 
     public void TakeDamage(float damage)
